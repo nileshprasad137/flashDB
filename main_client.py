@@ -20,9 +20,9 @@ def joined(data):
 #     print('message received with ', data)
 #     # sio.emit('my response', {'response': 'my response'})
 
-@sio.event
+@sio.event(namespace='/test')
 def disconnect():
     print('disconnected from server')
 
-sio.connect('http://localhost:5000')
+sio.connect('http://localhost:5000/?token=123')
 # sio.wait()
