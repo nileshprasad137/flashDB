@@ -1,15 +1,16 @@
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room
 from .. import socketio
+import time
 
 
-@socketio.event
+@socketio.on('connect', namespace="/test")
 def connect():
     print('connection established by someone.')
     # session['keyo'] = request.args.get('token') # /a?session=example
     # print(session['keyo'])
     # print("dummy")
-
+    # time.sleep(1)
     emit('joined', {'data': {"key":"balye"}})
 
 # @socketio.on('joined', namespace='/chat')
