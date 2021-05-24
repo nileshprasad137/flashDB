@@ -1,22 +1,27 @@
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room, disconnect
-from .. import socketio
+from .. import socketio, db_client
 
 
 @socketio.on('connect', namespace="/test")
 def connect():
     print('connection established by someone.')
-    session['keyo'] = request.args.get('token') # /a?session=example
-    print(session['keyo'])
-    if session['keyo']!=567:
-        print("hello")
+    token = request.args.get('token') # /?token=uuid_dummy
+    print(token)
+    clients = db_client.clients
+    results = clients.find_one({"client_id": token})
+    print(results)
+    if not results:
         disconnect()
-    emit('joined', {'data': {"session_id":session['keyo']}})
-
+    emit('joined', {
+        'data': {
+            "message": "Hello " + token
+        }}
+    )
 
 @socketio.on('disconnect', namespace="/test")
 def connect():
-    emit('banned', {'data': "you are kicked out."})
+    emit('banned', {'data': "you are kicked out of socket."})
     print('disconnected (catched on server side)')
 
 

@@ -3,7 +3,7 @@ from flask import session, redirect, url_for, render_template, request
 from . import main
 from flask_login import current_user
 from flask_socketio import disconnect, socketio
-
+from .. import db_client
 
 
 @main.route('/register', methods=['GET'])
@@ -11,14 +11,10 @@ def index():
     """Register Client"""
     data = request.json
     client_id = uuid.uuid4()
-    client_secret = uuid.uuid4()
-    response = {"client_id": str(client_id), "client_secret": str(client_secret)}
-    session["name"] = str(client_id)
-    # print(session['name'])
-    # print(session.get('room', ''))
-    # if not current_user.is_authenticated:
-    #     socketio.disconnect()
+    response = {"client_id": str(client_id)}
     # Also store in mongo db
+    client_data = { "client_id": str(client_id) }
+    db_client["clients"].insert_one(client_data)
     return json.dumps(response)
     
 
