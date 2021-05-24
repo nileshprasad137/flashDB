@@ -4,6 +4,7 @@ from . import main
 from flask_login import current_user
 from flask_socketio import disconnect
 from .helper_functions import is_document_present
+from .. import db_client
 
 @main.route('/register-client', methods=['GET'])
 def index():
@@ -20,19 +21,21 @@ def index():
 @main.route('/create-client-project', methods=['POST'])
 def add():
     """ Create client project. """
+    # QUESTION: Do i need to check if that particluar clinet_id is connected to socket?
     data = request.json
     client_id = data["client_id"]
     project_name = data["project_name"]
     status = False
     message = str()
     if is_document_present("clients", {"client_id" : client_id}):
-        client_data = { "project_name": project_name, "project_owner": client_id }
-        inserted_data = db_client["projects"].insert_one(client_data)
-        if inserted_data:
-            status = True
-            message = "Project creation successful!"
-    else:
-        message = "Project creation failed as this client_id is not present!"
+        project_data = { "project_name": project_name, "project_owner": client_id }
+        if not is_document_present("projects", project_data):
+            inserted_data = db_client["projects"].insert_one(project_data)
+            if inserted_data:
+                status = True
+                message = "Project creation successful!"
+    if not status:
+        message = "Project creation failed as this client_id is not present, or project already created!"
 
     response = {"status": status, "message": message}
     return Response(
@@ -42,7 +45,7 @@ def add():
     )
 
 """
-# client can create app
+# client can create app/project
 # Client can create database
 # Client can create document
 # clients can subscribe to app/db/table updates.
