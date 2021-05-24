@@ -16,7 +16,13 @@ def connect():
 
 @socketio.on('disconnect', namespace="/test")
 def connect():
+    emit('banned', {'data': "you are kicked out."})
     print('disconnected (catched on server side)')
+
+
+@socketio.on('after', namespace="/test")
+def connect():
+    print('after disconnect.')
 
 # @socketio.on('joined', namespace='/chat')
 # def joined():

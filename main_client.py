@@ -15,6 +15,13 @@ def joined(data):
     # time.sleep(1)
     sio.emit('my response', {'response': 'my response'})
 
+
+@sio.on("banned", namespace="/test")
+def joined(data):
+    print('message received with ', data)
+    sio.emit('after', {'response': 'my response'})
+
+
 # @sio.event
 # def my_message(data):
 #     print('message received with ', data)
