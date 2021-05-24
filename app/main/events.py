@@ -21,7 +21,7 @@ def connect():
 
 @socketio.on('disconnect', namespace="/test")
 def connect():
-    emit('banned', {'data': "you are kicked out of socket."})
+    emit('banned', {'data': "you are kicked out of socket. you wont be able to send messages now."})
     print('disconnected (catched on server side)')
 
 

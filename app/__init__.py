@@ -4,21 +4,18 @@ from flask_socketio import SocketIO
 from flask_login import LoginManager
 
 
-socketio = SocketIO()
-# Establish db connection.
-mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
-db_client = mongo_client["flashdb"] 
-print(mongo_client.list_database_names())
-collection_list = db_client.list_collection_names()
-# Add collection for clients if it doesn't exist
-collection_list = db_client.list_collection_names()
-if "clients" in collection_list:
-    print("The collection exists.")
-else:
-    client_collection = db_client["clients"]
-    test_data = { "client_id": "TEST" }
-    inserted_data = client_collection.insert_one(test_data)
-# TODO Handle db connection failures.
+def create_required_collections(required_collections):
+    current_collections_in_db = db_client.list_collection_names()
+    for collection in required_collections:
+        if collection not in current_collections_in_db:
+            test_data = { "initialiser_data": "TEST" }
+            db_collection = db_client[collection]
+            inserted_data = db_collection.insert_one(test_data)
+            if inserted_data is not None:
+                print(f"Collection '{collection}' is created")
+        else:
+            print(f"Collection '{collection}' was already present")
+
 
 def create_app(debug=True):
     """Create the app."""
@@ -31,3 +28,12 @@ def create_app(debug=True):
 
     socketio.init_app(app)
     return app
+
+
+socketio = SocketIO()
+# Establish db connection.
+mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
+db_client = mongo_client["flashdb"] 
+print(mongo_client.list_database_names())
+required_collections = ["clients", "projects", "test"]
+create_required_collections(required_collections)
