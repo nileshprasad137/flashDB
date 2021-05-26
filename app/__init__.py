@@ -4,12 +4,12 @@ from flask_socketio import SocketIO
 from flask_login import LoginManager
 
 
-def create_required_collections(required_collections):
-    current_collections_in_db = master_flash_db_client.list_collection_names()
+def create_required_collections(required_collections, database_name="flashdb"):
+    current_collections_in_db = mongo_client[database_name].list_collection_names()
     for collection in required_collections:
         if collection not in current_collections_in_db:
             test_data = { "initialiser_data": "TEST" }
-            db_collection = master_flash_db_client[collection]
+            db_collection = mongo_client[database_name][collection]
             inserted_data = db_collection.insert_one(test_data)
             if inserted_data is not None:
                 print(f"Collection '{collection}' is created")

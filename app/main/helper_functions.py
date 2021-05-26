@@ -1,8 +1,8 @@
-from .. import master_flash_db_client
+from .. import mongo_client
 
-def is_document_present(collection, query):
-    clients = master_flash_db_client[collection]
-    results = clients.find_one(query)
+def is_document_present(collection, query, database="flashdb"):
+    collection_connection = mongo_client[database][collection]
+    results = collection_connection.find_one(query)
     print("Results of query :: ", results)
     return results is not None
 

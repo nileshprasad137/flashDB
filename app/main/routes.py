@@ -4,7 +4,7 @@ from . import main
 from flask_login import current_user
 from flask_socketio import disconnect
 from .helper_functions import is_document_present
-from .. import mongo_client, master_flash_db_client
+from .. import mongo_client, master_flash_db_client, create_required_collections
 
 @main.route('/register-client', methods=['GET'])
 def index():
@@ -49,13 +49,27 @@ def create_client_db():
     data = request.json
     client_id = data["client_id"]
     project_name = data["project_name"]
-    database_name = data["database_name"]
+    client_database_name = data["database_name"]
     status = False
     message = str()
     client_query = {"client_id" : client_id}
     project_query = { "project_name": project_name, "project_owner": client_id }
-    # if is_document_present("")
-    pass
+    if is_document_present("clients", client_query) and is_document_present("projects", project_query):
+        formatted_client_database_name = client_id + "-" + client_database_name
+        if formatted_client_database_name not in mongo_client.list_database_names():
+            new_client_database = mongo_client[formatted_client_database_name]
+            init_collections = ["init_coll"]
+            create_required_collections(init_collections, formatted_client_database_name)
+            status = True
+            message = "Database creation successful!"
+    if not status:
+        message = "Database creation failed as client_id, project_id not found or database already in existence."
+    response = {"status": status, "message": message}
+    return Response(
+        response=json.dumps(response),
+        status=200 if status else 400,
+        mimetype='application/json'
+    )
 
 """
 # client can create app/project
