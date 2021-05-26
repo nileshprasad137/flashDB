@@ -1,4 +1,4 @@
-import pymongo
+import pymongo, redis
 from flask import Flask
 from flask_socketio import SocketIO
 from flask_login import LoginManager
@@ -29,7 +29,8 @@ def create_app(debug=True):
     socketio.init_app(app)
     return app
 
-
+redis_client = redis.Redis()
+print(redis_client.ping())
 socketio = SocketIO()
 # Establish db connection.
 mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")

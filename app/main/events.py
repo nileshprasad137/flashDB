@@ -1,6 +1,9 @@
+import redis
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room, disconnect
-from .. import socketio, db_client
+from .. import socketio, db_client, redis_client
+
+connected_clients = []
 
 
 @socketio.on('connect', namespace="/test")
@@ -18,11 +21,23 @@ def connect():
             "message": "Hello " + token
         }}
     )
+    # should I store historing connection data at Mongo ?
+    client_connection_detail = {
+            'client_session': str(request.sid),
+            'client_ip': str(request.access_route),
+            'token': token
+    }
+    connected_clients.append(client_connection_detail)
+    redis_client.hmset(token, client_connection_detail)
+    # print(connected_clients)
+    # print(redis_client.hgetall(token))
+    # print(redis_client.exists(token))
 
 @socketio.on('disconnect', namespace="/test")
 def connect():
     emit('banned', {'data': "you are kicked out of socket. you wont be able to send messages now."})
     print('disconnected (catched on server side)')
+    # clients.remove(request.namespace)
 
 
 @socketio.on('after', namespace="/test")
