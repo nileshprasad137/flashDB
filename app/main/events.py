@@ -21,7 +21,7 @@ def connect():
             "message": "Hello " + token
         }}
     )
-    # should I store historing connection data at Mongo ?
+    # TODO should I store historic connection data at Mongo ?
     client_connection_detail = {
             'client_session': str(request.sid),
             'client_ip': str(request.access_route),
@@ -37,6 +37,8 @@ def connect():
 def connect():
     emit('banned', {'data': "you are kicked out of socket. you wont be able to send messages now."})
     print('disconnected (catched on server side)')
+    token = request.args.get('token')
+    redis_client.delete(token)
     # clients.remove(request.namespace)
 
 
