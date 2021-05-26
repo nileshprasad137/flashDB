@@ -1,7 +1,7 @@
 import redis
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room, disconnect
-from .. import socketio, db_client, redis_client
+from .. import socketio, master_flash_db_client, redis_client
 
 connected_clients = []
 
@@ -11,7 +11,7 @@ def connect():
     print('connection established by someone.')
     token = request.args.get('token') # /?token=uuid_dummy
     print(token)
-    clients = db_client.clients
+    clients = master_flash_db_client.clients
     results = clients.find_one({"client_id": token})
     print(results)
     if not results:

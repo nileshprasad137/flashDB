@@ -4,7 +4,7 @@ from . import main
 from flask_login import current_user
 from flask_socketio import disconnect
 from .helper_functions import is_document_present
-from .. import db_client
+from .. import mongo_client, master_flash_db_client
 
 @main.route('/register-client', methods=['GET'])
 def index():
@@ -14,12 +14,12 @@ def index():
     response = {"client_id": str(client_id)}
     # Also store in mongo db
     client_data = { "client_id": str(client_id) }
-    db_client["clients"].insert_one(client_data)
+    master_flash_db_client["clients"].insert_one(client_data)
     return jsonify(response)
     
 
 @main.route('/create-client-project', methods=['POST'])
-def add():
+def create_client_project():
     """ Create client project. """
     # QUESTION: Do i need to check if that particluar clinet_id is connected to socket?
     data = request.json
@@ -30,7 +30,7 @@ def add():
     if is_document_present("clients", {"client_id" : client_id}):
         project_data = { "project_name": project_name, "project_owner": client_id }
         if not is_document_present("projects", project_data):
-            inserted_data = db_client["projects"].insert_one(project_data)
+            inserted_data = master_flash_db_client["projects"].insert_one(project_data)
             if inserted_data:
                 status = True
                 message = "Project creation successful!"
@@ -43,6 +43,19 @@ def add():
         status=200 if status else 400,
         mimetype='application/json'
     )
+
+@main.route('/create-client-db', methods=['POST'])
+def create_client_db():
+    data = request.json
+    client_id = data["client_id"]
+    project_name = data["project_name"]
+    database_name = data["database_name"]
+    status = False
+    message = str()
+    client_query = {"client_id" : client_id}
+    project_query = { "project_name": project_name, "project_owner": client_id }
+    # if is_document_present("")
+    pass
 
 """
 # client can create app/project
