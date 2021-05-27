@@ -6,6 +6,7 @@ from flask_socketio import disconnect
 from .helper_functions import is_document_present
 from .. import mongo_client, master_flash_db_client, create_required_collections
 
+
 @main.route('/register-client', methods=['GET'])
 def index():
     """Register Client"""
@@ -63,7 +64,10 @@ def create_client_db():
             clientdb_project_mapping_data = {
                 "client_id": client_id,
                 "project_name": project_name,
-                "database_name": formatted_client_database_name
+                "database_name": formatted_client_database_name,
+                "subscribers": [
+                    client_id
+                ]
             }
             master_flash_db_client["clientdb_project_mapping"].insert_one(clientdb_project_mapping_data)
             status = True
@@ -76,6 +80,65 @@ def create_client_db():
         status=200 if status else 400,
         mimetype='application/json'
     )
+
+
+@main.route('/create-client-collection', methods=['POST'])
+def create_client_collection():
+    data = request.json
+    client_id = data["client_id"]
+    project_name = data["project_name"]
+    client_database_name = data["database_name"]
+    formatted_client_database_name = client_id + "-" + client_database_name
+    client_collection_name = data["collection_name"]
+    status = False
+    message = str()
+    client_query = {"client_id" : client_id}
+    project_query = { "project_name": project_name, "project_owner": client_id }
+    client_database_query = { "project_name": project_name, "client_id": client_id, "database_name": formatted_client_database_name }
+    if is_document_present("clients", client_query) and is_document_present("projects", project_query) and is_document_present("clientdb_project_mapping", client_database_query): 
+        create_required_collections([client_collection_name], database_name=formatted_client_database_name)
+        status = True
+        message = "Collection for client created successfully!"
+    if not status:
+        message = "something went wrong!"
+    response = {"status": status, "message": message}
+    return Response(
+        response=json.dumps(response),
+        status=200 if status else 400,
+        mimetype='application/json'
+    )
+
+
+@main.route('/create-client-document', methods=['POST'])
+def create_client_document():
+    data = request.json
+    client_id = data["client_id"]
+    project_name = data["project_name"]
+    client_database_name = data["database_name"]
+    formatted_client_database_name = client_id + "-" + client_database_name
+    client_collection_name = data["collection_name"]
+    # TODO document sanitisation need to be done before populating.
+    client_document = data["document_data"]
+    status = False
+    message = str()
+    client_query = {"client_id" : client_id}
+    project_query = { "project_name": project_name, "project_owner": client_id }
+    client_database_query = { "project_name": project_name, "client_id": client_id, "database_name": formatted_client_database_name }
+    if is_document_present("clients", client_query) and is_document_present("projects", project_query) and is_document_present("clientdb_project_mapping", client_database_query): 
+        if client_collection_name in mongo_client[formatted_client_database_name].list_collection_names():
+            mongo_client[formatted_client_database_name][client_collection_name].insert_one(client_document)
+        status = True
+        message = "Document for client created successfully!"
+    if not status:
+        message = "something went wrong!"
+    response = {"status": status, "message": message}
+    return Response(
+        response=json.dumps(response),
+        status=200 if status else 400,
+        mimetype='application/json'
+    )
+
+# TODO UPDATE DOCS API
 
 """
 # client can create app/project

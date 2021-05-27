@@ -6,6 +6,7 @@ from flask_login import LoginManager
 
 def create_required_collections(required_collections, database_name="flashdb"):
     current_collections_in_db = mongo_client[database_name].list_collection_names()
+    print("database_name :: ", database_name)
     for collection in required_collections:
         if collection not in current_collections_in_db:
             test_data = { "initialiser_data": "TEST" }
