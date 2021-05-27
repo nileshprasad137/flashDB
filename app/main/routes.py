@@ -141,8 +141,9 @@ def create_client_document():
 # TODO UPDATE DOCS API
 
 """
-# client can create app/project
-# Client can create database
-# Client can create document
-# clients can subscribe to app/db/table updates.
+todos::
+# subscribe to db or project? db mostly.
+# connect to project
+# redis-pub-sub to client data to subs effectively.
+# refactor code and add helper functions.
 """
