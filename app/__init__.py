@@ -36,5 +36,5 @@ socketio = SocketIO()
 mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
 master_flash_db_client = mongo_client["flashdb"] 
 print(mongo_client.list_database_names())
-required_collections = ["clients", "projects", "test"]
+required_collections = ["clients", "projects", "test", "clientdb_project_mapping"]
 create_required_collections(required_collections)

@@ -60,6 +60,12 @@ def create_client_db():
             new_client_database = mongo_client[formatted_client_database_name]
             init_collections = ["init_coll"]
             create_required_collections(init_collections, formatted_client_database_name)
+            clientdb_project_mapping_data = {
+                "client_id": client_id,
+                "project_name": project_name,
+                "database_name": formatted_client_database_name
+            }
+            master_flash_db_client["clientdb_project_mapping"].insert_one(clientdb_project_mapping_data)
             status = True
             message = "Database creation successful!"
     if not status:
