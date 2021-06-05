@@ -31,6 +31,7 @@ def create_app(debug=True):
     return app
 
 redis_client = redis.Redis()
+# redis_pubsub = redis_client.pubsub()
 print(redis_client.ping())
 socketio = SocketIO()
 # Establish db connection.

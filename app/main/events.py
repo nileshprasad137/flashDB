@@ -1,6 +1,6 @@
 import redis
 from flask import session, request
-from flask_socketio import emit, join_room, leave_room, disconnect, send
+from flask_socketio import emit, join_room, leave_room, disconnect, send, rooms
 from .. import socketio, master_flash_db_client, redis_client
 
 connected_clients = []
@@ -19,10 +19,11 @@ def connect():
         disconnect()
     print("project_name = ", project_name)
     room = project_name
+    # TODO Before joining room, check if that particular token is authorised to enter the room.
     join_room(project_name)
     emit('joined', {
         'data': {
-            "message": "Hello " + token + ". You joined "+room
+            "message": "Hello " + token + ". You joined " + room
         }},
 
     )
@@ -37,7 +38,14 @@ def connect():
     redis_client.hmset(token, client_connection_detail)
     # does it need "join" event????
     print(connected_clients)
-    send(token + ' has entered the room.', room=room, broadcast=True)
+    print(room)
+    emit('message', {
+        'data': {
+            "message": token + " joined" + room
+        }},
+        room=room,
+        broadcast=True
+    )
     # print(socketio)
     # print(redis_client.hgetall(token))
     # print(redis_client.exists(token))
@@ -48,6 +56,7 @@ def connect():
     print('disconnected (catched on server side)')
     token = request.args.get('token')
     redis_client.delete(token)
+    # remove from connected_clients
     # clients.remove(request.namespace)
 
 

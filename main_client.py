@@ -20,10 +20,10 @@ def joined(data):
     print('message received with ', data)
 
 
-# @sio.event
-# def my_message(data):
-#     print('message received with ', data)
-#     # sio.emit('my response', {'response': 'my response'})
+@sio.on("message", namespace="/test")
+def message(data):
+    print('A message ', data)
+    # sio.emit('my response', {'response': 'my response'})
 
 @sio.event(namespace='/test')
 def disconnect():
