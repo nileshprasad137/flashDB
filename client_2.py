@@ -8,7 +8,6 @@ sio = socketio.Client()
 def connect():
     print('connection established')
 
-
 @sio.on("joined", namespace="/test")
 def joined(data):
     print('message received with ', data)
@@ -29,8 +28,7 @@ def joined(data):
 def disconnect():
     print('disconnected from server')
 
-# Client will connect to socket when it wants to connect to project.
-sio.connect('http://localhost:5000/?token=6a6e0620-5715-4495-ac5a-e40a3407da60&project=test')
+sio.connect('http://localhost:5000/?token=1a8b2824-e7ed-40e1-9dcd-fc2de8bb1d90&project=test')
 # sio.wait()
 
 """

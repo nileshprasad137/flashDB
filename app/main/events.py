@@ -1,6 +1,6 @@
 import redis
 from flask import session, request
-from flask_socketio import emit, join_room, leave_room, disconnect
+from flask_socketio import emit, join_room, leave_room, disconnect, send
 from .. import socketio, master_flash_db_client, redis_client
 
 connected_clients = []
@@ -11,15 +11,20 @@ def connect():
     print('connection established by someone.')
     token = request.args.get('token') # /?token=uuid_dummy
     print(token)
+    project_name = request.args.get('project')
     clients = master_flash_db_client.clients
     results = clients.find_one({"client_id": token})
     print(results)
     if not results:
         disconnect()
+    print("project_name = ", project_name)
+    room = project_name
+    join_room(project_name)
     emit('joined', {
         'data': {
-            "message": "Hello " + token
-        }}
+            "message": "Hello " + token + ". You joined "+room
+        }},
+
     )
     # TODO should I store historic connection data at Mongo ?
     client_connection_detail = {
@@ -27,9 +32,13 @@ def connect():
             'client_ip': str(request.access_route),
             'token': token
     }
+    # print connected clients' 
     connected_clients.append(client_connection_detail)
     redis_client.hmset(token, client_connection_detail)
-    # print(connected_clients)
+    # does it need "join" event????
+    print(connected_clients)
+    send(token + ' has entered the room.', room=room, broadcast=True)
+    # print(socketio)
     # print(redis_client.hgetall(token))
     # print(redis_client.exists(token))
 
@@ -70,3 +79,10 @@ def left(message):
     room = session.get('room')
     leave_room(room)
     emit('status', {'msg': session.get('name') + ' has left the room.'}, room=room)
+
+
+"""
+1. Close room implementation. (see flask socketio docs)
+2. Leave room implemenation.
+3. 
+"""

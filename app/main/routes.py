@@ -2,7 +2,7 @@ import uuid, json
 from flask import session, redirect, url_for, render_template, request, jsonify, Response
 from . import main
 from flask_login import current_user
-from flask_socketio import disconnect
+from flask_socketio import disconnect, join_room, leave_room
 from .helper_functions import is_document_present
 from .. import mongo_client, master_flash_db_client, create_required_collections
 
@@ -44,6 +44,7 @@ def create_client_project():
         status=200 if status else 400,
         mimetype='application/json'
     )
+
 
 @main.route('/create-client-db', methods=['POST'])
 def create_client_db():
@@ -138,12 +139,27 @@ def create_client_document():
         mimetype='application/json'
     )
 
+@main.route('/subscribe-to-db', methods=['POST'])
+def subscribe_to_database():
+    data = request.json
+    client_id = data["client_id"]
+    project_name = data["project_name"]
+    database_to_subscribe = data["database_name"]
+    formatted_client_database_name = client_id + "-" + client_database_name
+    # update-client-db mapping by adding subscriber.
+    pass
+
+
+
+
 # TODO UPDATE DOCS API
 
 """
 todos::
 # subscribe to db or project? db mostly.
+# rooms per project
 # connect to project
 # redis-pub-sub to client data to subs effectively.
 # refactor code and add helper functions.
+# improve error messages aka exception handling? very low priority.
 """
