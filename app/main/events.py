@@ -41,10 +41,9 @@ def connect():
     print(room)
     emit('message', {
         'data': {
-            "message": token + " joined" + room
+            "message": token + " joined " + room
         }},
-        room=room,
-        broadcast=True
+        room=room
     )
     # print(socketio)
     # print(redis_client.hgetall(token))

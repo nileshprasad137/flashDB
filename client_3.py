@@ -29,7 +29,7 @@ def disconnect():
     print('disconnected from server')
 
 # Client will connect to socket when it wants to connect to project.
-sio.connect('http://localhost:5000/?token=6a6e0620-5715-4495-ac5a-e40a3407da60&project=test')
+sio.connect('http://localhost:5000/?token=0b928e95-28d2-44ea-a949-5b78d1dd4ceb&project=test2')
 # sio.wait()
 
 """
