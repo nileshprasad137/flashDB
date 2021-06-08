@@ -3,7 +3,7 @@ from flask import session, redirect, url_for, render_template, request, jsonify,
 from . import main
 from flask_login import current_user
 from flask_socketio import disconnect, join_room, leave_room
-from .helper_functions import is_document_present
+from app.utils.helper_functions import is_document_present
 from .. import mongo_client, master_flash_db_client, create_required_collections
 
 
