@@ -18,16 +18,18 @@ class RedisWrapper():
         self.pubsub = redis_client.pubsub()
         self.client = redis_client
         print("Subscribing to ", self.room)
-        self.pubsub.subscribe(**{self.room: self.on_message})
+        self.pubsub.subscribe(**{'room': room})
         self.subscribed = True
         self.pubsub.run_in_thread(sleep_time=0.001)
     
     def un_sub(self):
+        print("unsubscribed from  :: ", self.room)
         if hasattr(self, 'room'):
             self.pubsub.unsubscribe(self.room)
             self.subscribed = False
             self.room = None
 
     def pub(self, data):
+        print(data)
         self.client.publish(self.room, data)
 

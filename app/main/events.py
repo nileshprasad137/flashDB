@@ -2,9 +2,10 @@ import redis
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room, disconnect, send, rooms
 from .. import socketio, master_flash_db_client, redis_client
+from app.utils.helper_functions import RedisWrapper
 
 connected_clients = []
-
+redis_helper = RedisWrapper()
 
 @socketio.on('connect', namespace="/test")
 def connect():
@@ -12,6 +13,7 @@ def connect():
     token = request.args.get('token') # /?token=uuid_dummy
     print(token)
     project_name = request.args.get('project')
+    session['project'] = project_name
     clients = master_flash_db_client.clients
     results = clients.find_one({"client_id": token})
     print(results)
@@ -20,6 +22,7 @@ def connect():
     print("project_name = ", project_name)
     room = project_name
     # TODO Before joining room, check if that particular token is authorised to enter the room.
+    redis_helper.sub(room=project_name)
     join_room(project_name)
     emit('joined', {
         'data': {
@@ -50,11 +53,14 @@ def connect():
     # print(redis_client.exists(token))
 
 @socketio.on('disconnect', namespace="/test")
-def connect():
+def disconnect():
     emit('banned', {'data': "you are kicked out of socket. you wont be able to send messages now."})
     print('disconnected (catched on server side)')
     token = request.args.get('token')
     redis_client.delete(token)
+    print("session['project'] ::", session['project'])
+    leave_room(session['project'])
+    redis_helper.un_sub()
     # remove from connected_clients
     # clients.remove(request.namespace)
 
@@ -72,10 +78,9 @@ def connect():
 #     emit('status', {'msg': session.get('name') + ' has entered the room.'}, room=room)
 
 
-@socketio.on('text', namespace='/chat')
-def text(message):
-    """Sent by a client when the user entered a new message.
-    The message is sent to all people in the room."""
+@socketio.on('message', namespace='/chat')
+def message(message):
+    """user sends a new message. This message is sent to all people in the room."""
     room = session.get('room')
     emit('message', {'msg': session.get('name') + ':' + message['msg']}, room=room)
 
