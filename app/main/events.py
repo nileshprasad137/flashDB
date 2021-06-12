@@ -4,8 +4,6 @@ from flask_socketio import emit, join_room, leave_room, disconnect, send, rooms
 from .. import socketio, master_flash_db_client, redis_client
 from app.utils.helper_functions import RedisWrapper
 
-connected_clients = []
-redis_helper = RedisWrapper()
 
 @socketio.on('connect', namespace="/test")
 def connect():
@@ -22,7 +20,9 @@ def connect():
     print("project_name = ", project_name)
     room = project_name
     # TODO Before joining room, check if that particular token is authorised to enter the room.
-    redis_helper.sub(room=project_name)
+    redis_pub_sub_helper = RedisWrapper()
+    redis_pub_sub_helper.sub(room=project_name)
+    session['redis_pub_sub_helper'] = redis_pub_sub_helper
     join_room(project_name)
     emit('joined', {
         'data': {
@@ -36,11 +36,8 @@ def connect():
             'client_ip': str(request.access_route),
             'token': token
     }
-    # print connected clients' 
-    connected_clients.append(client_connection_detail)
     redis_client.hmset(token, client_connection_detail)
     # does it need "join" event????
-    print(connected_clients)
     print(room)
     emit('message', {
         'data': {
@@ -60,7 +57,7 @@ def disconnect():
     redis_client.delete(token)
     print("session['project'] ::", session['project'])
     leave_room(session['project'])
-    redis_helper.un_sub()
+    session['redis_pub_sub_helper'].un_sub()
     # remove from connected_clients
     # clients.remove(request.namespace)
 
@@ -78,14 +75,16 @@ def connect():
 #     emit('status', {'msg': session.get('name') + ' has entered the room.'}, room=room)
 
 
-@socketio.on('message', namespace='/chat')
+@socketio.on('message', namespace='/test')
 def message(message):
     """user sends a new message. This message is sent to all people in the room."""
-    room = session.get('room')
-    emit('message', {'msg': session.get('name') + ':' + message['msg']}, room=room)
+    print("message param :: ", message)
+    room = session.get('project')
+    print("redis_session obj ==> ", session['redis_helper'])
+    session['redis_helper'].pub(message)
 
 
-@socketio.on('left', namespace='/chat')
+@socketio.on('left', namespace='/test')
 def left(message):
     """Sent by clients when they leave a room.
     A status message is broadcast to all people in the room."""

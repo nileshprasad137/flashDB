@@ -1,4 +1,4 @@
-import socketio
+import socketio, json
 
 sio = socketio.Client()
 
@@ -30,6 +30,7 @@ def disconnect():
 
 # Client will connect to socket when it wants to connect to project.
 sio.connect('http://localhost:5000/?token=0b928e95-28d2-44ea-a949-5b78d1dd4ceb&project=test2')
+sio.emit('message', json.dumps({'response': 'from client!!'}), namespace="/test")
 # sio.wait()
 
 """
