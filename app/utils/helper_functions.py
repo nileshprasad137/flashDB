@@ -9,6 +9,9 @@ def is_document_present(collection, query, database="flashdb"):
 
 
 class RedisWrapper():
+    def __init__(self):
+        print("redis client initialised")
+
     def on_message(self, data):
         """ Send any data to lobby(room) """
         print("server got a message")
@@ -28,6 +31,7 @@ class RedisWrapper():
         print("Subscribing to ", self.room)
         self.pubsub.subscribe(**{self.room: self.on_message})
         self.subscribed = True
+        print(self.room , " thread started.")
         self.pubsub.run_in_thread(sleep_time=0.001)
     
     def un_sub(self):
@@ -38,5 +42,6 @@ class RedisWrapper():
             self.room = None
 
     def pub(self, data):
+        print("inside redi wrapper pub function")
         self.client.publish(self.room, data)
 

@@ -11,7 +11,7 @@ Additional features.
  - Multitenant
 """
 
-import socketio, json
+import socketio, json, time
 
 sio = socketio.Client()
 
@@ -23,28 +23,35 @@ def connect():
 
 @sio.on("joined", namespace="/test")
 def joined(data):
-    print('message received with ', data)
+    print('Joining message:: ', data)
+
 
 @sio.on("broadcast", namespace="/test")
 def joined(data):
-    print('ye client me aa raha')
+    print("Mesaage in room :: ", data)
 
 
 @sio.on("banned", namespace="/test")
 def joined(data):
-    print('message received with ', data)
+    print('You were removed from room with this message:: ', data)
 
 
 @sio.on("message", namespace="/test")
 def message(data):
-    print('A message ', data)
+    print('Message in channel:: ', data)
     # sio.emit('my response', {'response': 'my response'})
 
 @sio.event(namespace='/test')
 def disconnect():
     print('disconnected from server')
+    sleep(3)
+    
 
 # Client will connect to socket when it wants to connect to project.
 sio.connect('http://localhost:5000/?token=1a8b2824-e7ed-40e1-9dcd-fc2de8bb1d90&project=test')
-sio.emit('message', json.dumps({'response': 'from client!!'}), namespace="/test")
+sio.emit('message', json.dumps({'response': 'Hi from client2!!'}), namespace="/test")
+time.sleep(20)
+sio.emit('message', json.dumps({'response': 'client2 left!!'}), namespace="/test")
+sio.disconnect()
+
 # sio.wait()

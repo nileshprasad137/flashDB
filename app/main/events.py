@@ -1,4 +1,4 @@
-import redis
+import redis, json
 from flask import session, request
 from flask_socketio import emit, join_room, leave_room, disconnect, send, rooms
 from .. import socketio, master_flash_db_client, redis_client
@@ -9,7 +9,6 @@ from app.utils.helper_functions import RedisWrapper
 def connect():
     print('connection established by someone.')
     token = request.args.get('token') # /?token=uuid_dummy
-    print(token)
     project_name = request.args.get('project')
     session['project'] = project_name
     clients = master_flash_db_client.clients
@@ -17,7 +16,7 @@ def connect():
     print(results)
     if not results:
         disconnect()
-    print("project_name = ", project_name)
+    print(token, " connected to room (project) = ", project_name)
     room = project_name
     # TODO Before joining room, check if that particular token is authorised to enter the room.
     redis_pub_sub_helper = RedisWrapper()
@@ -28,7 +27,7 @@ def connect():
         'data': {
             "message": "Hello " + token + ". You joined " + room
         }},
-
+        room=room
     )
     # TODO should I store historic connection data at Mongo ?
     client_connection_detail = {
@@ -38,13 +37,13 @@ def connect():
     }
     redis_client.hmset(token, client_connection_detail)
     # does it need "join" event????
-    print(room)
-    emit('message', {
-        'data': {
-            "message": token + " joined " + room
-        }},
-        room=room
-    )
+    # emit('message', {
+    #     'data': {
+    #         "message": token + " joined " + room
+    #     }},
+    #     room=room
+    # )
+    session['redis_pub_sub_helper'].pub(json.dumps({"message": token + " joined " + room}))
     # print(socketio)
     # print(redis_client.hgetall(token))
     # print(redis_client.exists(token))
@@ -52,35 +51,25 @@ def connect():
 @socketio.on('disconnect', namespace="/test")
 def disconnect():
     emit('banned', {'data': "you are kicked out of socket. you wont be able to send messages now."})
-    print('disconnected (catched on server side)')
     token = request.args.get('token')
+    print(token, ' disconnected (catched on server side). It left ', session['project'])
+    # delete from redis cache
     redis_client.delete(token)
-    print("session['project'] ::", session['project'])
     leave_room(session['project'])
     session['redis_pub_sub_helper'].un_sub()
     # remove from connected_clients
-    # clients.remove(request.namespace)
 
 
 @socketio.on('after', namespace="/test")
 def connect():
     print('after disconnect.')
 
-# @socketio.on('joined', namespace='/chat')
-# def joined():
-#     """Sent by clients when they enter a room.
-#     A status message is broadcast to all people in the room."""
-#     room = session.get('room')
-#     join_room(room)
-#     emit('status', {'msg': session.get('name') + ' has entered the room.'}, room=room)
-
 
 @socketio.on('message', namespace='/test')
 def message(message):
     """user sends a new message. This message is sent to all people in the room."""
-    print("message param :: ", message)
     room = session.get('project')
-    print("redis_session obj ==> ", session['redis_pub_sub_helper'])
+    print("Server received message in room :: ",room, ". Message is ->", message)
     session['redis_pub_sub_helper'].pub(message)
 
 
