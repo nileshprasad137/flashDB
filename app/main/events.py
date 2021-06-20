@@ -80,8 +80,8 @@ def message(message):
     """user sends a new message. This message is sent to all people in the room."""
     print("message param :: ", message)
     room = session.get('project')
-    print("redis_session obj ==> ", session['redis_helper'])
-    session['redis_helper'].pub(message)
+    print("redis_session obj ==> ", session['redis_pub_sub_helper'])
+    session['redis_pub_sub_helper'].pub(message)
 
 
 @socketio.on('left', namespace='/test')

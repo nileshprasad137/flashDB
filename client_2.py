@@ -25,6 +25,10 @@ def connect():
 def joined(data):
     print('message received with ', data)
 
+@sio.on("broadcast", namespace="/test")
+def joined(data):
+    print('ye client me aa raha')
+
 
 @sio.on("banned", namespace="/test")
 def joined(data):

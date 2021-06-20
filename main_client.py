@@ -28,6 +28,10 @@ def message(data):
 def disconnect():
     print('disconnected from server')
 
+@sio.on("broadcast", namespace="/test")
+def joined(data):
+    print('ye client me aa raha')
+
 # Client will connect to socket when it wants to connect to project.
 sio.connect('http://localhost:5000/?token=6a6e0620-5715-4495-ac5a-e40a3407da60&project=test')
 # sio.wait()

@@ -1,21 +1,9 @@
-# from gevent import monkey
-# monkey.patch_all()
-# from eventlet import monkey_patch as monkey_patch
-# monkey_patch()
+import eventlet
+eventlet.monkey_patch()
 import pymongo, redis
 from flask import Flask
 from flask_socketio import SocketIO
 from flask_login import LoginManager
-# try:
-#     from eventlet import monkey_patch as monkey_patch
-#     monkey_patch()
-#     print("mokey patch done.")
-# except ImportError:
-#     try:
-#         from gevent.monkey import patch_all
-#         patch_all()
-#     except ImportError:
-#         pass
 
 def create_required_collections(required_collections, database_name="flashdb"):
     current_collections_in_db = mongo_client[database_name].list_collection_names()

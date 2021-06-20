@@ -1,4 +1,5 @@
-from .. import mongo_client, redis_client
+import ast
+from .. import mongo_client, redis_client, socketio
 
 def is_document_present(collection, query, database="flashdb"):
     collection_connection = mongo_client[database][collection]
@@ -11,8 +12,9 @@ class RedisWrapper():
     def on_message(self, data):
         """ Send any data to lobby(room) """
         print("server got a message")
-        print(data)
-
+        decoded_data = ast.literal_eval(data['data'].decode('utf-8'))
+        print(decoded_data)
+        socketio.emit("broadcast", decoded_data, namespace='/test', room=self.room)
 
     def sub(self, room=None):
         if not room:
